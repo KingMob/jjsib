@@ -40,5 +40,5 @@ run_jjsib() {
 
 # Get current workspace name from jj workspace list
 get_workspace_name() {
-    jj workspace list --ignore-working-copy | grep -o '^[^ ]*'
+    jj workspace list --ignore-working-copy | awk -F: '{print $1}'
 }
