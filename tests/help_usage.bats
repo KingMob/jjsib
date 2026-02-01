@@ -41,11 +41,12 @@ teardown() {
     [[ "$output" =~ ^jjsib\ [0-9]+\.[0-9]+\.[0-9]+$ ]]
 }
 
-@test "-v flag shows version" {
+@test "-v flag is not a version alias" {
+    # -v is not recognized as a mode, so outside a jj repo it fails
+    # when trying to check jj workspace root
     run "$SCRIPT_PATH" -v
 
-    [ "$status" -eq 0 ]
-    [[ "$output" =~ ^jjsib\ [0-9]+\.[0-9]+\.[0-9]+$ ]]
+    [ "$status" -eq 1 ]
 }
 
 @test "no arguments shows error and usage" {
@@ -62,4 +63,151 @@ teardown() {
     run "$SCRIPT_PATH" foobar
 
     [ "$status" -eq 1 ]
+}
+
+# Mode-specific help tests
+
+@test "help add shows add-specific help" {
+    run "$SCRIPT_PATH" help add
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib add"* ]]
+    [[ "$output" == *"workspace-name"* ]]
+    [[ "$output" == *"parent-revset"* ]]
+    [[ "$output" == *"Aliases: create"* ]]
+}
+
+@test "help create shows add help (alias)" {
+    run "$SCRIPT_PATH" help create
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib add"* ]]
+}
+
+@test "help forget shows forget-specific help" {
+    run "$SCRIPT_PATH" help forget
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib forget"* ]]
+    [[ "$output" == *"Aliases: remove, rm"* ]]
+}
+
+@test "help rm shows forget help (alias)" {
+    run "$SCRIPT_PATH" help rm
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib forget"* ]]
+}
+
+@test "help switch shows switch-specific help" {
+    run "$SCRIPT_PATH" help switch
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib switch"* ]]
+    [[ "$output" == *"Aliases: sw"* ]]
+}
+
+@test "help sw shows switch help (alias)" {
+    run "$SCRIPT_PATH" help sw
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib switch"* ]]
+}
+
+@test "help rename shows rename-specific help" {
+    run "$SCRIPT_PATH" help rename
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib rename"* ]]
+    [[ "$output" == *"old-name"* ]]
+    [[ "$output" == *"new-name"* ]]
+}
+
+@test "help list shows list-specific help" {
+    run "$SCRIPT_PATH" help list
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib list"* ]]
+    [[ "$output" == *"Aliases: ls"* ]]
+}
+
+@test "help ls shows list help (alias)" {
+    run "$SCRIPT_PATH" help ls
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib list"* ]]
+}
+
+@test "help hook shows hook-specific help" {
+    run "$SCRIPT_PATH" help hook
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib hook"* ]]
+    [[ "$output" == *"bash, zsh, or fish"* ]]
+}
+
+@test "help version shows version-specific help" {
+    run "$SCRIPT_PATH" help version
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib version"* ]]
+    [[ "$output" == *"Aliases: --version"* ]]
+}
+
+@test "help help shows help-specific help" {
+    run "$SCRIPT_PATH" help help
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib help"* ]]
+    [[ "$output" == *"Aliases: --help, -h"* ]]
+}
+
+@test "help unknown-mode shows error" {
+    run "$SCRIPT_PATH" help nonexistent
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Unknown mode: nonexistent"* ]]
+}
+
+# --help and -h flag tests
+
+@test "--help flag shows top-level help" {
+    run "$SCRIPT_PATH" --help
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Usage:"* ]]
+    [[ "$output" == *"Modes:"* ]]
+}
+
+@test "-h flag shows top-level help" {
+    run "$SCRIPT_PATH" -h
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Usage:"* ]]
+    [[ "$output" == *"Modes:"* ]]
+}
+
+@test "--help ignores subcommand argument" {
+    run "$SCRIPT_PATH" --help add
+
+    [ "$status" -eq 0 ]
+    # Should show top-level help, not add-specific help
+    [[ "$output" == *"Modes:"* ]]
+    [[ "$output" != *"Aliases: create"* ]]
+}
+
+@test "-h ignores subcommand argument" {
+    run "$SCRIPT_PATH" -h switch
+
+    [ "$status" -eq 0 ]
+    # Should show top-level help, not switch-specific help
+    [[ "$output" == *"Modes:"* ]]
+    [[ "$output" != *"Aliases: sw"* ]]
+}
+
+@test "top-level help mentions mode-specific help" {
+    run "$SCRIPT_PATH" help
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"jjsib help <mode>"* ]]
 }

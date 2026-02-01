@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-VERSION="0.3.0"
+VERSION="0.4.0"
 
 # Function to validate workspace name
 validate_workspace_name() {
@@ -89,32 +89,19 @@ Modes:
   version           Show version information
   help              Show this help message
 
-Arguments:
-  mode
-  workspace-name    Name of the workspace (will be used as the directory name)
-                    Not required for 'list', or for 'forget'/'switch' in interactive mode
-  parent-revset     Parent revision (or revset) for new workspace (add mode only, default: @)
+Run 'jjsib help <mode>' for detailed information about a specific mode.
 
 Note: Sibling directories use the workspace name as the directory name.
       Workspace names are auto-synced to match directory names on each invocation.
 
-Initialization Script:
-  If a file named '.workspace-init.sh' exists in the newly created workspace directory,
-  it will be automatically executed after workspace creation. This allows for
-  automatic setup of workspace-specific configurations, dependencies, or other
-  initialization tasks.
-
 Examples:
   jjsib add feature-workspace
   jjsib add feature-workspace main
-  jjsib add hotfix-123 @
-  jjsib add experiment-ui @-
   jjsib list
   jjsib forget feature-workspace
-  jjsib rm hotfix-123                 # Same as forget
   jjsib switch                        # Interactive selection
   jjsib sw feature-workspace          # Non-interactive switch
-  jjsib rename old-name new-name      # Rename workspace and directory
+  jjsib rename old-name new-name
 
 Shell Completion:
   To enable completion, add this to your shell config:
@@ -123,6 +110,190 @@ Shell Completion:
     Fish (~/.config/fish/config.fish):  $SCRIPT_BASENAME hook fish | source
 
 EOF
+}
+
+# Function to display mode-specific help
+mode_help() {
+    local mode="$1"
+    # Normalize aliases to canonical mode names
+    case "$mode" in
+        create) mode="add" ;;
+        remove|rm) mode="forget" ;;
+        sw) mode="switch" ;;
+        ls) mode="list" ;;
+        --version) mode="version" ;;
+    esac
+    case "$mode" in
+        add|create)
+            cat <<'EOF'
+jjsib add - Create a new sibling workspace
+
+Usage: jjsib add <workspace-name> [parent-revset]
+
+Arguments:
+  workspace-name    Name of the workspace (will be used as the directory name)
+                    Must contain only alphanumeric characters, dots, underscores, and hyphens
+  parent-revset     Parent revision or revset for the new workspace (default: @)
+
+The new workspace is created as a sibling directory at the same level as
+the current repository.
+
+Initialization Script:
+  If a file named '.workspace-init.sh' exists in the newly created workspace
+  directory, it will be automatically executed after workspace creation. This
+  allows for automatic setup of workspace-specific configurations, dependencies,
+  or other initialization tasks.
+
+Examples:
+  jjsib add feature-workspace           # Create workspace at current revision
+  jjsib add feature-workspace main      # Create workspace at 'main'
+  jjsib add hotfix-123 @                # Explicit current revision
+  jjsib add experiment-ui @-            # Create at parent of current revision
+
+Aliases: create
+EOF
+            ;;
+        forget|remove|rm)
+            cat <<'EOF'
+jjsib forget - Forget and delete a sibling workspace
+
+Usage: jjsib forget [workspace-name]
+
+Arguments:
+  workspace-name    Name of the workspace to forget (optional)
+                    If omitted, an interactive selection menu is shown
+
+This command:
+  1. Forgets the workspace from jj's tracking
+  2. Deletes the workspace directory
+
+You cannot forget the workspace you are currently in.
+
+Examples:
+  jjsib forget feature-workspace    # Forget specific workspace
+  jjsib forget                      # Interactive selection
+  jjsib rm hotfix-123               # Using 'rm' alias
+  jjsib remove old-workspace        # Using 'remove' alias
+
+Aliases: remove, rm
+EOF
+            ;;
+        switch|sw)
+            cat <<'EOF'
+jjsib switch - Switch to an existing sibling workspace
+
+Usage: jjsib switch [workspace-name]
+
+Arguments:
+  workspace-name    Name of the workspace to switch to (optional)
+                    If omitted, an interactive selection menu is shown
+
+This command changes your current directory to the specified workspace.
+Note: Requires the jjsib shell function to be installed (via 'jjsib hook').
+
+Examples:
+  jjsib switch feature-workspace    # Switch to specific workspace
+  jjsib switch                      # Interactive selection
+  jjsib sw hotfix-123               # Using 'sw' alias
+
+Aliases: sw
+EOF
+            ;;
+        rename)
+            cat <<'EOF'
+jjsib rename - Rename an existing workspace and its directory
+
+Usage: jjsib rename <old-name> <new-name>
+
+Arguments:
+  old-name    Current name of the workspace
+  new-name    New name for the workspace
+
+This command:
+  1. Renames the workspace in jj
+  2. Renames the workspace directory
+
+If you are currently in the workspace being renamed, jjsib will
+automatically switch you to the new directory location.
+
+Examples:
+  jjsib rename old-feature new-feature
+  jjsib rename temp-work final-implementation
+EOF
+            ;;
+        list|ls)
+            cat <<'EOF'
+jjsib list - List all workspaces
+
+Usage: jjsib list
+
+This command displays all jj workspaces in the repository.
+It takes no arguments.
+
+Examples:
+  jjsib list
+  jjsib ls          # Using 'ls' alias
+
+Aliases: ls
+EOF
+            ;;
+        hook)
+            cat <<'EOF'
+jjsib hook - Output shell function and completion script
+
+Usage: jjsib hook <shell>
+
+Arguments:
+  shell    The shell to generate hooks for: bash, zsh, or fish
+
+This command outputs a shell function and completion script that should
+be evaluated in your shell configuration. The shell function is required
+for the 'switch' command to work (it needs to change the parent shell's
+directory).
+
+Installation:
+  Bash (~/.bashrc):                     eval "$(jjsib hook bash)"
+  Zsh (~/.zshrc):                       eval "$(jjsib hook zsh)"
+  Fish (~/.config/fish/config.fish):    jjsib hook fish | source
+
+EOF
+            ;;
+        version)
+            cat <<'EOF'
+jjsib version - Show version information
+
+Usage: jjsib version
+
+This command displays the current version of jjsib.
+It takes no arguments.
+
+Aliases: --version
+EOF
+            ;;
+        help)
+            cat <<'EOF'
+jjsib help - Show help information
+
+Usage: jjsib help [mode]
+
+Arguments:
+  mode    Name of the mode to get help for (optional)
+          If omitted, shows general help
+
+Examples:
+  jjsib help            # Show general help
+  jjsib help add        # Show help for 'add' mode
+  jjsib help switch     # Show help for 'switch' mode
+
+Aliases: --help, -h (top-level help only, no subcommands)
+EOF
+            ;;
+        *)
+            echo "Unknown mode: $mode" >&2
+            echo "Run 'jjsib help' for a list of available modes." >&2
+            return 1
+            ;;
+    esac
 }
 
 # Check if we have at least 1 argument
@@ -137,10 +308,19 @@ MODE="$1"
 # Handle modes that don't require jj repository
 case "$MODE" in
     help)
+        if [ $# -eq 1 ]; then
+            usage
+        else
+            mode_help "$2"
+        fi
+        exit $?
+        ;;
+    --help|-h)
+        # Flags always show top-level help only (no subcommands)
         usage
         exit 0
         ;;
-    version|--version|-v)
+    version|--version)
         echo "jjsib $VERSION"
         exit 0
         ;;

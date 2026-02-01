@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-02-01
+
+### Added
+
+- **Mode-specific help:** `jjsib help <mode>` now shows detailed help for each mode, including arguments, examples, and aliases.
+- **Help flags:** Added `--help` and `-h` as aliases for top-level help (these always show general help, not mode-specific).
+
+### Changed
+
+- **Removed `-v` version alias:** The `-v` flag is no longer an alias for `version`. Use `--version` or `version` instead.
+
 ## [0.3.0] - 2026-02-01
 
 ### Removed
@@ -28,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `switch`/`sw` - Switch between sibling workspaces
   - `rename` - Rename workspace and its directory atomically
   - `list`/`ls` - List all workspaces
-  - `version` - Display version information (also `--version`, `-v`)
+  - `version` - Display version information (also `--version`)
   - `help` - Display usage information
 
 - **Shell integration:**
