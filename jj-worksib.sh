@@ -75,7 +75,7 @@ usage() {
     cat <<EOF
 jjsib $VERSION - Sibling workspace manager for Jujutsu (jj)
 
-Usage: jjsib <mode> [workspace-name] [parent-revset]
+Usage: jjsib <mode> [mode arguments...]
 
 Manages sibling Jujutsu (jj) workspaces at the same directory level as the current repository.
 
@@ -103,10 +103,6 @@ Initialization Script:
   it will be automatically executed after workspace creation. This allows for
   automatic setup of workspace-specific configurations, dependencies, or other
   initialization tasks.
-
-  For robustness, init scripts should start with:
-    cd "\$(dirname "\$0")" || exit 1
-  This ensures the script works when run manually from any directory.
 
 Examples:
   jjsib add feature-workspace
