@@ -1,5 +1,7 @@
 # jjsib
 
+[![GitHub](https://img.shields.io/github/license/KingMob/jjsib)](https://github.com/KingMob/jjsib)
+
 Manage Jujutsu (jj) workspaces as sibling directories.
 
 ## About
