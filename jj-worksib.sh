@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+VERSION="0.1.0"
+
 # Function to validate workspace name
 validate_workspace_name() {
     local workspace_name=$1
@@ -70,6 +72,8 @@ require_directory() {
 usage() {
     SCRIPT_BASENAME=$(basename "$0")
     cat <<EOF
+jjsib $VERSION - Sibling workspace manager for Jujutsu (jj)
+
 Usage: jjsib <mode> [workspace-name] [parent-revset]
 
 Manages sibling Jujutsu (jj) workspaces at the same directory level as the current repository.
@@ -82,6 +86,7 @@ Modes:
   rename      Rename an existing workspace and its directory
   list|ls     List all workspaces
   hook        Output shell function and bash completion script for installation
+  version     Show version information
   help        Show this help message
 
 Arguments:
@@ -137,6 +142,10 @@ MODE="$1"
 case "$MODE" in
     help)
         usage
+        exit 0
+        ;;
+    version|--version|-v)
+        echo "jjsib $VERSION"
         exit 0
         ;;
     hook)
@@ -214,6 +223,7 @@ if [[ -n "$ZSH_VERSION" ]]; then
             'list:List all workspaces'
             'ls:List all workspaces'
             'hook:Output shell function and completion script'
+            'version:Show version information'
             'help:Show help message'
         )
 
@@ -261,7 +271,7 @@ elif [[ -n "$BASH_VERSION" ]]; then
         prev="${COMP_WORDS[COMP_CWORD-1]}"
 
         # Available modes
-        local modes="init add create remove rm switch sw rename list ls hook help"
+        local modes="init add create remove rm switch sw rename list ls hook version help"
 
         # If we're completing the first argument (mode)
         if [[ $COMP_CWORD -eq 1 ]]; then
@@ -376,6 +386,8 @@ complete -c jjsib -n "test (count (commandline -opc)) -eq 1" \
     -a "ls" -d "List all workspaces"
 complete -c jjsib -n "test (count (commandline -opc)) -eq 1" \
     -a "hook" -d "Output shell function and completion script"
+complete -c jjsib -n "test (count (commandline -opc)) -eq 1" \
+    -a "version" -d "Show version information"
 complete -c jjsib -n "test (count (commandline -opc)) -eq 1" \
     -a "help" -d "Show help message"
 
@@ -521,7 +533,7 @@ case "$MODE" in
         NEW_SIBLING_PATH="$PARENT_DIR/$NEW_WORKSPACE_NAME"
         ;;
     *)
-        echo "❌ Mode must be 'init', 'add', 'create', 'remove', 'rm', 'switch', 'sw', 'rename', 'list', 'ls', 'hook', or 'help'" >&2
+        echo "❌ Mode must be 'init', 'add', 'create', 'remove', 'rm', 'switch', 'sw', 'rename', 'list', 'ls', 'hook', 'version', or 'help'" >&2
         usage
         exit 1
         ;;
