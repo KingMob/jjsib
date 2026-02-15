@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 # Function to validate workspace name
 validate_workspace_name() {
@@ -79,7 +79,6 @@ require_directory() {
 
 # Function to display usage information
 usage() {
-    SCRIPT_BASENAME=$(basename "$0")
     cat <<EOF
 jjsib $VERSION - Sibling workspace manager for Jujutsu (jj)
 
@@ -110,12 +109,6 @@ Examples:
   jjsib switch                        # Interactive selection
   jjsib sw feature-workspace          # Non-interactive switch
   jjsib rename old-name new-name
-
-Shell Completion:
-  To enable completion, add this to your shell config:
-    Bash (~/.bashrc):   eval "\$($SCRIPT_BASENAME hook bash)"
-    Zsh (~/.zshrc):     eval "\$($SCRIPT_BASENAME hook zsh)"
-    Fish (~/.config/fish/config.fish):  $SCRIPT_BASENAME hook fish | source
 
 EOF
 }
